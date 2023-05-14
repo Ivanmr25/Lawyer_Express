@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:background="@color/HHM"
+    android:id="@+id/registro"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Logo -->
+
+        <!-- Texto "Registrarse" -->
+        <ImageView
+            android:layout_width="224dp"
+            android:layout_height="177dp"
+            android:layout_gravity="center_horizontal"
+            android:paddingBottom="32dp"
+            android:src="@drawable/logo" />
+
+        <!-- Número de Colegiado -->
+        <TextView
+            android:layout_width="230dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:paddingBottom="32dp"
+            android:text="Registrarse"
+            android:textAlignment="center"
+            android:textColor="#FFFFFF"
+            android:textSize="24sp" />
+
+        <EditText
+            android:id="@+id/editTextColegiado"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Número de Colegiado"
+            android:textColor="@android:color/white"
+            android:textColorHighlight="@android:color/white"
+            android:textColorHint="@android:color/white" />
+
+        <!-- Nombre -->
+        <EditText
+            android:id="@+id/editTextNombre"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Nombre"
+            android:textColorHint="@android:color/white" />
+
+        <!-- Número de Teléfono -->
+        <EditText
+            android:id="@+id/editTextTelefono"
+            android:layout_width="381dp"
+            android:layout_height="55dp"
+            android:layout_marginBottom="16dp"
+            android:hint="Número de Teléfono"
+            android:textColorHint="@android:color/white" />
+
+        <!-- Partido Judicial -->
+        <Spinner
+            android:id="@+id/spinnerPartidoJudicial"
+            android:layout_width="375dp"
+            android:layout_height="37dp"
+            android:layout_marginBottom="16dp"
+            android:hint="Partido Judicial" />
+
+        <!-- Contraseña -->
+
+        <!-- Botón Registrarse -->
+        <EditText
+            android:id="@+id/editTextContraseña"
+            android:layout_width="377dp"
+            android:layout_height="58dp"
+            android:layout_marginBottom="16dp"
+            android:hint="Contraseña"
+            android:inputType="textPassword"
+            android:textColor="@android:color/white"
+            android:textColorHint="@android:color/white" />
+
+        <Button
+            android:id="@+id/buttonRegistrarse"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#FFFFFF"
+            android:text="Registrarse"
+            android:textColor="@android:color/black" />
+
+    </LinearLayout>
+
+</FrameLayout>
