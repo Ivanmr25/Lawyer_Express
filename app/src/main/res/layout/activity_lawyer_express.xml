@@ -50,12 +50,5 @@
         app:tabGravity="fill"
         app:tabMode="fixed" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
-        android:layout_height="80dp"
-        android:layout_gravity="bottom|end"
-        android:layout_marginEnd="@dimen/fab_margin"
-        android:layout_marginBottom="80dp"
-        app:srcCompat="@android:drawable/btn_plus" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

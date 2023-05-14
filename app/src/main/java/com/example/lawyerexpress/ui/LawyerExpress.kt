@@ -45,21 +45,20 @@ class LawyerExpress : AppCompatActivity() {
         setupViewPager(binding.viewPager)
         setupTabs()
         setSupportActionBar(binding.toolbar)
-        val fab: FloatingActionButton = binding.fab
 
-        fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
-        }
     }
     private fun setupViewPager(viewPager: ViewPager2) {
         val adapter = ViewPageAdapter(this)
         val chatFragment = ChatFragment()
+        val mapFragment = MapFragment()
         chatFragment.arguments = Bundle().apply {
             putSerializable("abogado", abogado)
         }
 
-        adapter.addFragment(MapFragment())
+        mapFragment.arguments = Bundle().apply {
+            putSerializable("abogado", abogado)
+        }
+        adapter.addFragment(mapFragment)
         adapter.addFragment(chatFragment)
 
         viewPager.adapter = adapter
@@ -87,11 +86,7 @@ class LawyerExpress : AppCompatActivity() {
         tabLayoutMediator.attach()
         binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
-                if (position == 0) {
-                    binding.fab.hide()
-                } else {
-                    binding.fab.show()
-                }
+
             }
         })
     }

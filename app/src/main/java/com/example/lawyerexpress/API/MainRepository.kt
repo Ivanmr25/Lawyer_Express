@@ -2,8 +2,11 @@ package com.example.lawyerexpress.API
 
 import android.util.Log
 import com.example.lawyerexpress.Model.Abogado
+import com.example.lawyerexpress.Model.Amigo
 import com.example.lawyerexpress.Model.PartidoJudicial
 import com.example.lawyerexpress.Model.Telefono
+import okhttp3.MediaType
+import okhttp3.RequestBody
 
 class MainRepository {
     val service = WebAccess.LawyerService
@@ -19,7 +22,7 @@ class MainRepository {
     suspend fun getAmigos(numero_colegiado:Int): List<Abogado> {
         val webResponse = service.getAmigos(numero_colegiado).await()
         if (webResponse.isSuccessful) {
-                Log.d("Ivan","$webResponse")
+
             return webResponse.body()!!.amigos
         }
         return emptyList()
@@ -32,7 +35,7 @@ class MainRepository {
         var usuarioresponse:Abogado? = null
         val webResponse = service.getUserByNickAndPass(usuario.numero_colegiado.toString(),usuario.pass).await()
         if (webResponse.isSuccessful) {
-            Log.d("Ivan","$webResponse")
+
             usuarioresponse = webResponse.body()!!.abogado
         }
         return usuarioresponse
@@ -52,9 +55,21 @@ class MainRepository {
         var telefonoresponse:Telefono? = null
         val webResponse = service.saveTelefono(telefono).await()
         if (webResponse.isSuccessful) {
-            Log.d("Ivan","$webResponse")
+
             telefonoresponse = webResponse.body()!!.telefono
         }
         return telefonoresponse
+    }
+
+    suspend fun saveAmigo(numero_colegiado: Int, numero: Int): Amigo? {
+        var amigoResponse: Amigo? = null
+        val requestBody = RequestBody.create(MediaType.parse("application/json"), "{\"numero_colegiado\":$numero_colegiado}")
+        val webResponse = service.saveAmigo(requestBody, numero).await()
+        if (webResponse.isSuccessful) {
+
+            amigoResponse = webResponse.body()?.amigo
+
+        }
+        return amigoResponse
     }
 }

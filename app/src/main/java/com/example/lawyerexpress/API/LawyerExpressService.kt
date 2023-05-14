@@ -4,6 +4,7 @@ import com.example.lawyerexpress.Model.Abogado
 import com.example.lawyerexpress.Model.Respuesta
 import com.example.lawyerexpress.Model.Telefono
 import kotlinx.coroutines.Deferred
+import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -24,5 +25,8 @@ interface LawyerExpressService {
 
     @POST("telefono")
     fun saveTelefono(@Body telefono: Telefono): Deferred<Response<Respuesta>>
+
+    @POST("amigo/{numero}")
+    fun saveAmigo(@Body body: RequestBody, @Path("numero") numero: Int): Deferred<Response<Respuesta>>
 }
 

@@ -50,6 +50,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:hint="Nombre"
+            android:textColor="@color/white"
             android:textColorHint="@android:color/white" />
 
         <!-- Número de Teléfono -->
@@ -59,6 +60,7 @@
             android:layout_height="55dp"
             android:layout_marginBottom="16dp"
             android:hint="Número de Teléfono"
+            android:textColor="@color/white"
             android:textColorHint="@android:color/white" />
 
         <!-- Partido Judicial -->
@@ -67,6 +69,7 @@
             android:layout_width="375dp"
             android:layout_height="37dp"
             android:layout_marginBottom="16dp"
+            android:backgroundTint="@android:color/white"
             android:hint="Partido Judicial" />
 
         <!-- Contraseña -->

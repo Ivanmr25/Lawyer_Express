@@ -51,9 +51,9 @@ class RegisterFragment : Fragment() {
         val editTextTelefono = view.findViewById<EditText>(R.id.editTextTelefono)
         val spinnerPartidoJudicial = view.findViewById<Spinner>(R.id.spinnerPartidoJudicial)
 
-        // Configurar el evento de clic del botón
+
         buttonRegistrarse.setOnClickListener {
-            // Lógica cuando se hace clic en el botón "Registrarse"
+
             val numeroColegiado = editTextColegiado.text.toString()
             val nombre = editTextNombre.text.toString()
             val telefono = editTextTelefono.text.toString()

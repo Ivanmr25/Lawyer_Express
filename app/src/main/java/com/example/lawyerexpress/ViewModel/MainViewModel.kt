@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lawyerexpress.API.MainRepository
 import com.example.lawyerexpress.Model.Abogado
+import com.example.lawyerexpress.Model.Amigo
 import com.example.lawyerexpress.Model.PartidoJudicial
 import com.example.lawyerexpress.Model.Telefono
 import kotlinx.coroutines.Dispatchers
@@ -65,4 +66,15 @@ class MainViewModel: ViewModel() {
         }
         return telefonoresponse
     }
+
+    fun saveAmigo(numero_colegiado: Int, numero: Int): MutableLiveData<Amigo> {
+        val amigoResponse = MutableLiveData<Amigo>()
+        GlobalScope.launch(Dispatchers.Main) {
+            amigoResponse.value = repository.saveAmigo(numero_colegiado, numero)
+        }
+        return amigoResponse
+    }
+
+
+
 }

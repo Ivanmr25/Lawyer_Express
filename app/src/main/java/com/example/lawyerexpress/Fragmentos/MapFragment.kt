@@ -8,6 +8,7 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Looper
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.Menu
@@ -15,10 +16,13 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.SearchView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModelProvider
 import com.example.lawyerexpress.Model.Abogado
 import com.example.lawyerexpress.R
+import com.example.lawyerexpress.ViewModel.MainViewModel
 import com.example.lawyerexpress.ui.LawyerExpress
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.common.api.ResolvableApiException
@@ -26,7 +30,9 @@ import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.Task
 
 // TODO: Rename parameter arguments, choose names that match
@@ -42,18 +48,22 @@ private const val ARG_PARAM2 = "param2"
 class MapFragment : Fragment() {
     // TODO: Rename and change types of parameters
     private lateinit var map: GoogleMap
+    private lateinit var viewModel: MainViewModel
     private lateinit var googleApiClient: GoogleApiClient
     private lateinit var locationRequest: LocationRequest
     private var locationPermissionGranted = false
     private var shouldEnableLocation = false
     private val REQUEST_LOCATION_PERMISSION = 1
     private val REQUEST_CHECK_SETTINGS = 2
-    private lateinit var abogado:Abogado
+    private var abogado: Abogado? = null
+    private lateinit var amigos: List<Abogado>
     private lateinit var shareP: SharedPreferences
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-
+        arguments?.let {
+            abogado = it.getSerializable("abogado") as Abogado?
+        }
 
 
     }
@@ -69,7 +79,7 @@ class MapFragment : Fragment() {
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
         val mapFragment = childFragmentManager.findFragmentById(R.id.mapa) as SupportMapFragment
         shareP = requireContext().getSharedPreferences("datos", Context.MODE_PRIVATE)
         mapFragment.getMapAsync { googleMap ->
@@ -84,10 +94,65 @@ class MapFragment : Fragment() {
                 )
             }
         }
+        GetAmigos()
+        val searchView = view.findViewById<SearchView>(R.id.searchView)
+
+        // Configurar el listener de búsqueda
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                // Realizar búsqueda en la lista de amigos
+                val foundAmigo = amigos.find { it.nombre.contains(query ?: "", true) }
+
+                // Si se encuentra el amigo, centrar la cámara en su ubicación
+                if (foundAmigo != null) {
+                    val amigoLocation = LatLng((foundAmigo.latitud ?: 0f).toDouble(), (foundAmigo.longitud ?:0f).toDouble())
+                    val cameraUpdate = CameraUpdateFactory.newLatLngZoom(amigoLocation, 15f)
+                    map.animateCamera(cameraUpdate)
+                } else {
+                    Toast.makeText(requireContext(), "Amigo no encontrado", Toast.LENGTH_SHORT).show()
+                }
+
+                // Retornar true para indicar que se ha manejado la búsqueda
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                // No se requiere acción al cambiar el texto de búsqueda
+                return false
+            }
+        })
     }
 
+    private fun GetAmigos() {
+        viewModel.getAmigos(abogado!!.numero_colegiado).observe(viewLifecycleOwner) { it ->
+            it?.let {
+                amigos = it
+                if (amigos.isEmpty()) {
+                    Toast.makeText(requireContext(), "No tienes amigos", Toast.LENGTH_SHORT).show()
+                } else {
+                    showAmigos(amigos)
+                }
+            }
+        }
+    }
+    private fun showAmigos(amigos: List<Abogado>) {
+        for (amigo in amigos) {
+            val latLng = LatLng((amigo.latitud ?: 0f).toDouble(), (amigo.longitud ?: 0f).toDouble())
 
+            // Aquí se crea el marcador personalizado simulando otro usuario en el mapa
+            val markerOptions = MarkerOptions()
+                .position(latLng)
+                .title(amigo.nombre)
+                .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+            map.addMarker(markerOptions)
 
+        }
+
+        // Zoom y centrado del mapa en la ubicación del otro usuario
+        val otherUserLocation = LatLng((amigos[0].latitud ?: 0f).toDouble(), (amigos[0].longitud ?: 0f).toDouble())
+        val cameraUpdate = CameraUpdateFactory.newLatLngZoom(otherUserLocation, 15f)
+        map.animateCamera(cameraUpdate)
+    }
     private fun createLocationRequest() {
         locationRequest = LocationRequest.create().apply {
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
@@ -124,6 +189,9 @@ class MapFragment : Fragment() {
                             for (location in locationResult.locations) {
                                 val latLng = LatLng(location.latitude, location.longitude)
                                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15f))
+                                abogado!!.latitud = location.latitude.toFloat()
+                                abogado!!.longitud = location.longitude.toFloat()
+                                Log.d("Ivan","${ abogado!!.latitud},${abogado!!.longitud }")
                             }
                         }
                     }
