@@ -2,6 +2,8 @@ package com.example.lawyerexpress.Model
 
 import java.io.Serializable
 
+//Clases de los objetos que reciben la respuesta de las distintas acciones que realiza la API
+
 data class Respuesta(
     var abogado:Abogado,
     var telefono:Telefono,

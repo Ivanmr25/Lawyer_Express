@@ -69,14 +69,9 @@ class RegisterFragment : Fragment() {
         return view
     }
 
-    private fun PasarASegunda(abogado: Abogado) {
-        val intent = Intent(requireContext(), LawyerExpress::class.java)
-        intent.putExtra("abogado",abogado)
-
-        startActivity(intent)
-    }
 
 
+    //Metodo para sacar partidos judiciales
     private fun SacarPartidos() {
         viewModel.partidos.observe(viewLifecycleOwner) { it ->
             it?.let {
@@ -85,7 +80,7 @@ class RegisterFragment : Fragment() {
             }
         }
     }
-
+    //Iniciar el spinner a partir de la lista de partidos judiciales
     private fun InitSpinner() {
         val nombresPartidos = partidos.map { partido -> partido.nombre }
         val adapter =
@@ -99,7 +94,7 @@ class RegisterFragment : Fragment() {
 
 
 
-
+    //Metodo para crear un usuario
     private fun CrearUsuario(
         numero_colegiado: String,
         nombre: String,
@@ -117,12 +112,14 @@ class RegisterFragment : Fragment() {
             }
         })
     }
+
+    //Metodo para asignar telefono a un usuario
     private fun CrearTelefono(numero_colegiado: Int, numero: String) {
         telefono = Telefono(numero.toInt(), numero_colegiado)
         viewModel.saveTelefono(telefono).observe(viewLifecycleOwner, Observer { it ->
             it?.let {
                 telefono = it
-                Log.d("Ivan","$telefono")
+
                 SaveTelefonoSH(telefono)
                 PasarASegunda(abogado)
 
@@ -136,13 +133,19 @@ class RegisterFragment : Fragment() {
         editor.commit()
     }
 
-
+    //Guardar el usuario en la sharepreferences
     private fun saveUsuarioSH(abogado: Abogado) {
         val editor = shareP.edit()
         editor.putString("usuario", Gson().toJson(abogado))
         editor.commit()
 
     }
+    //Metodo para pasar a la tabbed Activity ademas de pasarle el objeto abogado
+    private fun PasarASegunda(abogado: Abogado) {
+        val intent = Intent(requireContext(), LawyerExpress::class.java)
+        intent.putExtra("abogado",abogado)
 
+        startActivity(intent)
+    }
 
 }

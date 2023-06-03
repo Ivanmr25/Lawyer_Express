@@ -29,11 +29,13 @@ import com.google.android.material.tabs.TabLayoutMediator
 class LawyerExpress : AppCompatActivity() {
 
     private lateinit var binding: ActivityLawyerExpressBinding
-    public var abogado: Abogado? = null
+    private var abogado: Abogado? = null
     private lateinit var shareP: SharedPreferences
-    private   var telefono: Telefono? = null
+
     private val icons = arrayOf(R.drawable.mapa,android.R.drawable.stat_notify_chat)
     private val titles = arrayOf("Localizacion  ","Chat")
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -47,6 +49,13 @@ class LawyerExpress : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
 
     }
+
+    override fun onBackPressed() {
+        // Aquí no hacemos nada para evitar volver a la primera pantalla
+    }
+
+
+    //Funcion para preparar que el ViewPager maneje los fragmentos de la Tabbed Activity
     private fun setupViewPager(viewPager: ViewPager2) {
         val adapter = ViewPageAdapter(this)
         val chatFragment = ChatFragment()
@@ -62,8 +71,9 @@ class LawyerExpress : AppCompatActivity() {
         adapter.addFragment(chatFragment)
 
         viewPager.adapter = adapter
+        viewPager.isUserInputEnabled = false
     }
-
+  //Metodo para poder preparar los iconos y textos de la tabbed Activity
     private fun setupTabs() {
         val tabLayout = binding.tabs
         val tabLayoutMediator = TabLayoutMediator(tabLayout, binding.viewPager) { tab, i ->
@@ -90,10 +100,13 @@ class LawyerExpress : AppCompatActivity() {
             }
         })
     }
+
+    //Metodos que se encargan de inflar el menu en la pantalla y de poder realizar acciones en ese menu
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_law, menu)
         return true
     }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_logout -> {
@@ -101,10 +114,12 @@ class LawyerExpress : AppCompatActivity() {
                 return true
             }
 
-            // Manejar otras acciones del menú aquí si es necesario
+
         }
         return super.onOptionsItemSelected(item)
     }
+
+    // Funcion para deslogear al usuario de la App
     private fun removeUsuarioSH() {
         val editor = shareP.edit()
         editor.remove("usuario")
@@ -116,6 +131,7 @@ class LawyerExpress : AppCompatActivity() {
 
     }
 
+    //Metodo para volver a la primera pantalla despues de haber cerrado sesion
     private fun GetBack() {
         val intent = Intent(this, MainActivity::class.java)
 

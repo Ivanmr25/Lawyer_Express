@@ -7,6 +7,7 @@ import android.content.IntentSender
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -32,24 +33,14 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.tasks.Task
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [MapFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class MapFragment : Fragment() {
-    // TODO: Rename and change types of parameters
     private lateinit var map: GoogleMap
     private lateinit var viewModel: MainViewModel
-    private lateinit var googleApiClient: GoogleApiClient
+    private var currentLocationMarker: Marker? = null
     private lateinit var locationRequest: LocationRequest
     private var locationPermissionGranted = false
     private var shouldEnableLocation = false
@@ -57,16 +48,18 @@ class MapFragment : Fragment() {
     private val REQUEST_CHECK_SETTINGS = 2
     private var abogado: Abogado? = null
     private lateinit var amigos: List<Abogado>
-    private lateinit var shareP: SharedPreferences
+    private val locationHandler = Handler()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        //Obtener el objeto abogado del fragmento de registro o del inicio de sesion
         arguments?.let {
             abogado = it.getSerializable("abogado") as Abogado?
         }
 
 
     }
+
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -77,24 +70,40 @@ class MapFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_map, container, false)
 
     }
+    @SuppressLint("MissingPermission")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(this).get(MainViewModel::class.java)
         val mapFragment = childFragmentManager.findFragmentById(R.id.mapa) as SupportMapFragment
-        shareP = requireContext().getSharedPreferences("datos", Context.MODE_PRIVATE)
+
         mapFragment.getMapAsync { googleMap ->
             map = googleMap
 
             if (isLocationGranted()) {
                 enableLocation()
+                map.isMyLocationEnabled = true     // Mostrar la ubicación actual en el mapa
+                startLocationUpdates()
+
+                map.setOnMyLocationButtonClickListener {
+                    // Centrar la cámara en la ubicación actual
+                    val location = map.myLocation
+                    location?.let {
+                        val currentLocation = LatLng(it.latitude, it.longitude)
+                        val cameraUpdate = CameraUpdateFactory.newLatLngZoom(currentLocation, 15f)
+                        map.animateCamera(cameraUpdate)
+                    }
+                    true
+                }
             } else {
                 requestPermissions(
-                    arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                     REQUEST_LOCATION_PERMISSION
                 )
             }
         }
         GetAmigos()
+
+        //Busqueda de amigo en el caso que haya a partir de la barra de busqueda
         val searchView = view.findViewById<SearchView>(R.id.searchView)
 
         // Configurar el listener de búsqueda
@@ -105,7 +114,7 @@ class MapFragment : Fragment() {
 
                 // Si se encuentra el amigo, centrar la cámara en su ubicación
                 if (foundAmigo != null) {
-                    val amigoLocation = LatLng((foundAmigo.latitud ?: 0f).toDouble(), (foundAmigo.longitud ?:0f).toDouble())
+                    val amigoLocation = LatLng((foundAmigo.latitud ?: 0f).toDouble(), (foundAmigo.longitud ?: 0f).toDouble())
                     val cameraUpdate = CameraUpdateFactory.newLatLngZoom(amigoLocation, 15f)
                     map.animateCamera(cameraUpdate)
                 } else {
@@ -123,6 +132,7 @@ class MapFragment : Fragment() {
         })
     }
 
+    //Metodo para conseguir los amigos de ese abogado
     private fun GetAmigos() {
         viewModel.getAmigos(abogado!!.numero_colegiado).observe(viewLifecycleOwner) { it ->
             it?.let {
@@ -135,11 +145,15 @@ class MapFragment : Fragment() {
             }
         }
     }
+
+    //Metodo que a partir de la lista de amigos que se trae de la API coge la ubicacion y la pinta en el mapa
     private fun showAmigos(amigos: List<Abogado>) {
         for (amigo in amigos) {
             val latLng = LatLng((amigo.latitud ?: 0f).toDouble(), (amigo.longitud ?: 0f).toDouble())
 
             // Aquí se crea el marcador personalizado simulando otro usuario en el mapa
+
+
             val markerOptions = MarkerOptions()
                 .position(latLng)
                 .title(amigo.nombre)
@@ -148,11 +162,10 @@ class MapFragment : Fragment() {
 
         }
 
-        // Zoom y centrado del mapa en la ubicación del otro usuario
-        val otherUserLocation = LatLng((amigos[0].latitud ?: 0f).toDouble(), (amigos[0].longitud ?: 0f).toDouble())
-        val cameraUpdate = CameraUpdateFactory.newLatLngZoom(otherUserLocation, 15f)
-        map.animateCamera(cameraUpdate)
+
     }
+
+    //Metodo encargado de crear la solicitud de la ubicacion junto a los intervalos de actualizacion de la ubicacion
     private fun createLocationRequest() {
         locationRequest = LocationRequest.create().apply {
             priority = LocationRequest.PRIORITY_HIGH_ACCURACY
@@ -160,13 +173,15 @@ class MapFragment : Fragment() {
             fastestInterval = 5000 // 5 seconds
         }
     }
-
+    //Metodo encargado de verificar si se ha dado permisos de ubicacion
     private fun isLocationGranted() =
         ContextCompat.checkSelfPermission(
             requireContext(),
             Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
 
+
+    //Metodo para habilitar la funcion de localizacion en el mapa si los permisos se han concedido
     @SuppressLint("MissingPermission")
     private fun enableLocation() {
         if (!::map.isInitialized) return
@@ -207,6 +222,8 @@ class MapFragment : Fragment() {
             shouldEnableLocation = true
         }
     }
+
+    //Metodo que se encarga de manejar la respuesta de la solicitud de los permisos de ubicacion
     @SuppressLint("MissingPermission")
     override fun onRequestPermissionsResult(
         requestCode: Int,
@@ -241,10 +258,17 @@ class MapFragment : Fragment() {
             }
         }
     }
+
+    //Metodo para resumir el fragmento para que te vuelva a salir la localizacion y su funcion de actualizar
     @SuppressLint("MissingPermission")
     override fun onResume() {
         super.onResume()
+        GetAmigos()
+        locationHandler.post(locationRunnable)
+
         if (!::map.isInitialized) return
+
+        //Comprobacion en el caso de que hayas desactivado la localizacion en el cual te avisa de que tienes que activar la localizacion
         if (!isLocationGranted()) {
             map.isMyLocationEnabled = false
             Toast.makeText(
@@ -283,6 +307,77 @@ class MapFragment : Fragment() {
                 }
             }
         }
+    }
+    private fun startLocationUpdates() {
+        locationHandler.postDelayed(locationRunnable, 10000) // Repetir cada 10 segundos (10000 milisegundos)
+    }
+
+
+    //Runnable que se encarga de realizar el metodo de actualizar la ubicacion cada 10 segundos
+    @SuppressLint("MissingPermission")
+    private val locationRunnable = object : Runnable {
+        override fun run() {
+            // Obtener la ubicación actual
+            val locationProviderClient =
+                LocationServices.getFusedLocationProviderClient(requireContext())
+            locationProviderClient.lastLocation.addOnSuccessListener { location ->
+                if (location != null) {
+                    val latitude = location.latitude.toFloat()
+                    val longitude = location.longitude.toFloat()
+
+                    // Imprimir la latitud y longitud en la consola
+                    Log.d("Ubicación", "Latitud: $latitude, Longitud: $longitude")
+
+                    // Actualizar la ubicación en la base de datos
+                    viewModel.UpdateLocation(abogado!!.numero_colegiado, latitude, longitude)
+                        .observe(viewLifecycleOwner) { it ->
+                            it?.let {
+                                // Actualizar la posición en el mapa
+                                abogado!!.latitud = it.latitud
+                                abogado!!.longitud = it.longitud
+                                updateMapPosition(abogado!!.latitud!!.toFloat(), abogado!!.longitud!!.toFloat())
+                            }
+                        }
+
+                    // Volver a programar la obtención de ubicación después de 10 segundos
+                    locationHandler.postDelayed(this, 10000) // Repetir cada 10 segundos (10000 milisegundos)
+                } else {
+                    // Si no se pudo obtener la ubicación, volver a programar la obtención después de 10 segundos
+                    locationHandler.postDelayed(this, 10000) // Repetir cada 10 segundos (10000 milisegundos)
+                }
+            }
+        }
+    }
+
+    //Metodo que se encarga de conseguir tu ubicacion y llevar la camara a tu posicion
+    private fun updateMapPosition(latitude: Float, longitude: Float) {
+        if (!::map.isInitialized) return
+
+        val location = LatLng(latitude.toDouble(), longitude.toDouble())
+
+        // Centrar la cámara en la ubicación actualizada
+        val cameraUpdate = CameraUpdateFactory.newLatLng(location)
+        map.animateCamera(cameraUpdate)
+
+        // Actualizar el marcador de la posición en el mapa
+        if (currentLocationMarker != null) {
+            currentLocationMarker!!.remove()
+        }
+
+        val markerOptions = MarkerOptions()
+            .position(location)
+            .title("Mi ubicación")
+            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+        currentLocationMarker = map.addMarker(markerOptions)
+        GetAmigos()
+    }
+
+
+    // Detener el Runnable cuando el fragmento se pausa
+    override fun onPause() {
+        super.onPause()
+
+        locationHandler.removeCallbacks(locationRunnable)
     }
 
     }

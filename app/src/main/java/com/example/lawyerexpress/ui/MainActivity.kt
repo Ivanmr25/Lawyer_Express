@@ -19,7 +19,7 @@ import com.google.gson.Gson
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var appBarConfiguration: AppBarConfiguration
+
     private lateinit var binding: ActivityMainBinding
     private lateinit var shareP: SharedPreferences
     private lateinit var viewModel: MainViewModel
@@ -33,19 +33,22 @@ class MainActivity : AppCompatActivity() {
         shareP = getSharedPreferences("datos", Context.MODE_PRIVATE)
         setSupportActionBar(binding.toolbar)
         getUsuarioSH()
+        //Boton que te lleva al fragmento de registro
         binding.rl.buttonRegistrarse.setOnClickListener {
             PasaraFramento()
         }
-
+        //Boton que te hace la funcion de inicio de sesion
         binding.rl.buttonInicioSesion.setOnClickListener {
             val abogado = Abogado(binding.rl.editTextNumeroColegiado.text.toString().toInt(),"",0,0F,0F,binding.rl.editTextPassword.text.toString())
             IniciarSesion(abogado)
         }
+        //Comprobacion para que cuando las SP traigan el objeto usuario que directamente me lo pase a la segunda pantalla
         if (usuario != null){
             PasarASegunda(usuario!!)
         }
     }
 
+    //Metodo de comprobacion de usuario en la API si no existe devuelve un aviso de que no existe usuario
     private fun IniciarSesion(abogado: Abogado) {
         viewModel.getUserByNickAndPass(abogado).observe(this, Observer { it ->
 
@@ -60,6 +63,7 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+    //Metodo para guardar el usuario en las sharepreferences para que no tengamos que iniciar sesion de nuevo
     private fun saveUsuarioSH(abogado: Abogado) {
         val editor = shareP.edit()
         editor.putString("usuario", Gson().toJson(abogado))
@@ -68,6 +72,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    //Metodo para comprobar si el usuario existe en la sharepreferences para que haga un inicio de sesion automatico
     private fun getUsuarioSH() {
         val usuarioTXT = shareP.getString("usuario","nosta")
         if (!usuarioTXT.equals("nosta")){
@@ -76,31 +81,21 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    //Metodo para pasar a la segunda pantalla
     private fun PasarASegunda(abogado: Abogado) {
         val intent = Intent(this, LawyerExpress::class.java)
+        //Paso el objeto abogado a la segunda pantalla
         intent.putExtra("abogado",abogado)
         startActivity(intent)
     }
 
+    //Metodo para pasar al fragmento de registro
     private fun PasaraFramento() {
         val myFragment = RegisterFragment()
-
-
-        // Obtener el FragmentManager
         val fragmentManager = supportFragmentManager
-
-
-
-        // Iniciar la transacción de fragmento
         val fragmentTransaction = fragmentManager.beginTransaction()
-
-
-        // Reemplazar el contenido de la Activity por el nuevo fragmento
         fragmentTransaction.replace(R.id.content, myFragment)
-
         fragmentTransaction.addToBackStack(null)
-
-        // Confirmar la transacción
         fragmentTransaction.commit()
     }
 

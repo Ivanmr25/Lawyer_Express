@@ -16,6 +16,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.cardview.widget.CardView
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -65,6 +66,8 @@ class ChatFragment : Fragment() {
                 DialogoInsertarAmigo()
             }
 
+
+
     }
 
     private fun DialogoInsertarAmigo() {
@@ -108,7 +111,7 @@ class ChatFragment : Fragment() {
     }
 
     private fun InsertAmigo(numeroColegiado: Int, numero: Int) {
-        val requestBody = RequestBody.create(MediaType.parse("application/json"), "{\"numero_colegiado\":$numeroColegiado}")
+
         viewModel.saveAmigo(numeroColegiado, numero).observe(viewLifecycleOwner) { amigo ->
             amigo?.let {
                 if (it.amigo_Id != null) {
@@ -149,9 +152,12 @@ class ChatFragment : Fragment() {
 
 
     private fun initRv(view: View) {
-        adapter = CustomAdapter(requireActivity(), R.layout.row)
+        adapter = CustomAdapter(abogado,requireActivity(), R.layout.row)
         val recyclerView = view.findViewById<RecyclerView>(R.id.rvamigos)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.adapter = adapter
+
+
     }
+
 }
