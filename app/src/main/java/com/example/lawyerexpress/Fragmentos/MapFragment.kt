@@ -325,9 +325,7 @@ class MapFragment : Fragment() {
                     val latitude = location.latitude.toFloat()
                     val longitude = location.longitude.toFloat()
 
-                    // Imprimir la latitud y longitud en la consola
-                    Log.d("Ubicación", "Latitud: $latitude, Longitud: $longitude")
-
+            
                     // Actualizar la ubicación en la base de datos
                     viewModel.UpdateLocation(abogado!!.numero_colegiado, latitude, longitude)
                         .observe(viewLifecycleOwner) { it ->
@@ -339,10 +337,10 @@ class MapFragment : Fragment() {
                             }
                         }
 
-                    // Volver a programar la obtención de ubicación después de 10 segundos
-                    locationHandler.postDelayed(this, 10000) // Repetir cada 10 segundos (10000 milisegundos)
+                    // Volver a programar la actualizar la ubicación después de 10 segundos
+                    locationHandler.postDelayed(this, 10000)  (10000 milisegundos)
                 } else {
-                    // Si no se pudo obtener la ubicación, volver a programar la obtención después de 10 segundos
+                    // Si no se ha podido obtener la ubicación se vuelve a programar para que pruebe de nuevo después de 10 segundos
                     locationHandler.postDelayed(this, 10000) // Repetir cada 10 segundos (10000 milisegundos)
                 }
             }
