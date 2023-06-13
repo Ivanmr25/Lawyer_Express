@@ -337,7 +337,7 @@ class MapFragment : Fragment() {
                             }
                         }
 
-                    // Volver a programar la actualizar la ubicación después de 10 segundos
+                    // Volver a programar la actualizacion de la ubicación después de 10 segundos
                     locationHandler.postDelayed(this, 10000)  (10000 milisegundos)
                 } else {
                     // Si no se ha podido obtener la ubicación se vuelve a programar para que pruebe de nuevo después de 10 segundos
